@@ -5,6 +5,7 @@ import { authStart, authSuccess, authFailure } from '../store/authSlice.js';
 import { KeyRound, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import api from '../utils/api.js';
 import { toast } from 'sonner';
+import validator from 'validator';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -43,12 +44,15 @@ const Login = () => {
     if (!email || !password) {
       return toast.error('Please fill in all fields');
     }
+    if (!validator.isEmail(email)) {
+      return toast.error('Please enter a valid email address');
+    }
 
     dispatch(authStart());
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token, ...userData } = response.data;
-      dispatch(authSuccess({ user: userData, token }));
+      const userData = response.data;
+      dispatch(authSuccess({ user: userData }));
       toast.success(`Welcome back, ${userData.name}!`);
       redirectUser(userData.role);
     } catch (error) {
