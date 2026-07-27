@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Otp from '../models/Otp.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import axios from 'axios';
@@ -11,9 +12,13 @@ const generateToken = (userId, role) => {
 };
 
 export const register = async (req, res) => {
-  const { name, email, password, phone } = req.body;
+  const { name, email, password, phone, otp } = req.body;
   try {
-    if (!email || !validator.isEmail(email)) {
+    if (!name || !email || !password || !phone || !otp) {
+      return res.status(400).json({ message: 'All fields including OTP are required' });
+    }
+
+    if (!validator.isEmail(email)) {
       return res.status(400).json({ message: 'Please provide a valid email address' });
     }
 
@@ -22,9 +27,24 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
+    const otpRecord = await Otp.findOne({ email });
+    if (!otpRecord) {
+      return res.status(400).json({ message: 'OTP not requested or expired. Please request a new OTP.' });
+    }
+
+    if (otpRecord.otpExpires && otpRecord.otpExpires < new Date()) {
+      await Otp.deleteOne({ email });
+      return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
+    }
+
+    const isMatch = await bcrypt.compare(otp.toString(), otpRecord.otp);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid OTP code' });
+    }
+
+    await Otp.deleteOne({ email });
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const rawOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    const hashedOtp = await bcrypt.hash(rawOtp, 10);
 
     const user = await User.create({
       name,
@@ -32,36 +52,23 @@ export const register = async (req, res) => {
       password: hashedPassword,
       phone,
       role: 'customer',
-      otp: hashedOtp,
-      otpExpires: new Date(Date.now() + 10 * 60 * 1000),
     });
 
-    const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_hotel_otp';
-    const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_hotel_otp';
-    const publicKey = process.env.EMAILJS_PUBLIC_KEY || 'public_key_hotel_otp';
-    const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+    const token = generateToken(user._id, user.role);
 
-    try {
-      await axios.post('https://api.emailjs.com/api/v1.0/email/send', {
-        service_id: serviceId,
-        template_id: templateId,
-        user_id: publicKey,
-        template_params: {
-          user_name: user.name,
-          email: user.email,
-          otp: rawOtp,
-          project_name: 'Hotel Management System',
-        },
-        ...(privateKey ? { accessToken: privateKey } : {}),
-      });
-    } catch (emailErr) {
-      console.warn('Backend EmailJS send warning:', emailErr.message);
-    }
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
 
     res.status(201).json({
-      message: 'OTP sent to your email. Please verify to complete registration.',
+      _id: user._id,
+      name: user.name,
       email: user.email,
-      requireOtp: true,
+      role: user.role,
+      phone: user.phone,
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -142,23 +149,27 @@ export const getMe = async (req, res) => {
 };
 
 export const generateOtp = async (req, res) => {
-  const { email } = req.body;
+  const { email, name } = req.body;
   try {
     if (!email || !validator.isEmail(email)) {
       return res.status(400).json({ message: 'Please provide a valid email address' });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found with this email' });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists with this email address' });
     }
 
     const rawOtp = Math.floor(1000 + Math.random() * 9000).toString();
     const hashedOtp = await bcrypt.hash(rawOtp, 10);
 
-    user.otp = hashedOtp;
-    user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
+    await Otp.findOneAndUpdate(
+      { email },
+      { otp: hashedOtp, otpExpires: new Date(Date.now() + 10 * 60 * 1000) },
+      { upsert: true, new: true }
+    );
+
+    const userName = name || 'Valued Guest';
 
     const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_hotel_otp';
     const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_hotel_otp';
@@ -171,8 +182,8 @@ export const generateOtp = async (req, res) => {
         template_id: templateId,
         user_id: publicKey,
         template_params: {
-          user_name: user.name,
-          email: user.email,
+          user_name: userName,
+          email: email,
           otp: rawOtp,
           project_name: 'Hotel Management System',
         },
@@ -183,10 +194,9 @@ export const generateOtp = async (req, res) => {
     }
 
     res.status(200).json({
-      message: 'OTP generated successfully',
-      otp: rawOtp,
-      email: user.email,
-      name: user.name,
+      message: 'OTP sent to your email address',
+      email: email,
+      name: userName,
     });
   } catch (error) {
     console.error('Generate OTP Error:', error);

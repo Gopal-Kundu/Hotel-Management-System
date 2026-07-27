@@ -39,13 +39,13 @@ const Register = () => {
 
     dispatch(authStart());
     try {
-      const response = await api.post('/auth/register', { name, email, phone, password });
+      const response = await api.post('/auth/generate-otp', { email, name });
       toast.success(response.data.message || 'OTP sent to your email!');
       setIsOtpSent(true);
       dispatch(authFailure());
     } catch (error) {
-      console.error('Registration error:', error);
-      const msg = error.response?.data?.message || 'Registration failed. Please try again.';
+      console.error('OTP request error:', error);
+      const msg = error.response?.data?.message || 'Failed to send OTP. Please try again.';
       dispatch(authFailure(msg));
       toast.error(msg);
     }
@@ -55,7 +55,7 @@ const Register = () => {
     if (!email) return;
     setResendLoading(true);
     try {
-      const response = await api.post('/auth/generate-otp', { email });
+      const response = await api.post('/auth/generate-otp', { email, name });
       toast.success(response.data.message || `New OTP sent to ${email}!`);
     } catch (error) {
       console.error('Resend OTP error:', error);
@@ -73,13 +73,13 @@ const Register = () => {
 
     dispatch(authStart());
     try {
-      const response = await api.post('/auth/verify-otp', { email, otp });
+      const response = await api.post('/auth/register', { name, email, phone, password, otp });
       const userData = response.data;
       dispatch(authSuccess({ user: userData }));
-      toast.success(`Account verified! Welcome, ${userData.name}!`);
+      toast.success(`Account created & verified! Welcome, ${userData.name}!`);
       navigate('/customer-dashboard');
     } catch (error) {
-      console.error('OTP Verification error:', error);
+      console.error('Registration verification error:', error);
       const msg = error.response?.data?.message || 'OTP verification failed';
       dispatch(authFailure(msg));
       toast.error(msg);
