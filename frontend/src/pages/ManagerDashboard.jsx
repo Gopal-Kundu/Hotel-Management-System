@@ -14,7 +14,7 @@ const ManagerDashboard = () => {
   const [customers, setCustomers] = useState([]);
   
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-  const [customerForm, setCustomerForm] = useState({ name: '', email: '', password: 'customer123', phone: '' });
+  const [customerForm, setCustomerForm] = useState({ name: '', email: '', password: 'customer123' });
   
  
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -94,7 +94,7 @@ const ManagerDashboard = () => {
       await api.post('/admin/users', { ...customerForm, role: 'customer' });
       toast.success('Customer profile created successfully!');
       setIsCustomerModalOpen(false);
-      setCustomerForm({ name: '', email: '', password: 'customer123', phone: '' });
+      setCustomerForm({ name: '', email: '', password: 'customer123' });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create customer');
@@ -135,8 +135,7 @@ const ManagerDashboard = () => {
   const filteredCustomers = customers.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.phone && c.phone.includes(searchQuery))
+      c.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -207,7 +206,6 @@ const ManagerDashboard = () => {
                       <tr key={b._id} className="hover:bg-slate-850/30 transition-colors">
                         <td className="px-6 py-4">
                           <div className="font-semibold text-slate-200">{b.customer?.name || 'N/A'}</div>
-                          <div className="text-xs text-slate-500">{b.customer?.phone || 'No phone'}</div>
                         </td>
                         <td className="px-6 py-4 font-mono font-bold text-amber-500">
                           {b.room?.roomNumber || 'N/A'}
@@ -290,7 +288,6 @@ const ManagerDashboard = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="font-semibold text-slate-200 text-base">{b.customer?.name || 'N/A'}</div>
-                        <div className="text-xs text-slate-500">{b.customer?.phone || 'No phone'}</div>
                       </div>
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         b.status === 'checked-in' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
@@ -437,7 +434,7 @@ const ManagerDashboard = () => {
                 </span>
                 <input
                   type="text"
-                  placeholder="Search guests by name, email, or phone..."
+                  placeholder="Search guests by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-850 pl-10 pr-4 py-2.5 rounded-lg outline-none focus:border-amber-500 text-sm text-slate-200 transition-all placeholder:text-slate-600"
@@ -463,7 +460,6 @@ const ManagerDashboard = () => {
                   <thead className="bg-slate-950/60 text-xs text-slate-450 uppercase border-b border-slate-850">
                     <tr>
                       <th className="px-6 py-4">Guest Name & Email</th>
-                      <th className="px-6 py-4">Phone Number</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -476,9 +472,6 @@ const ManagerDashboard = () => {
                         <td className="px-6 py-4">
                           <div className="font-semibold text-slate-200">{c.name}</div>
                           <div className="text-xs text-slate-500">{c.email}</div>
-                        </td>
-                        <td className="px-6 py-4 text-xs font-mono text-slate-400">
-                          {c.phone || 'No phone number'}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button
@@ -512,9 +505,6 @@ const ManagerDashboard = () => {
                       <div>
                         <div className="font-semibold text-slate-200 text-sm">{c.name}</div>
                         <div className="text-xs text-slate-500">{c.email}</div>
-                        <div className="text-xs text-slate-400 font-mono mt-1">
-                          {c.phone || 'No phone number'}
-                        </div>
                       </div>
                       <button
                         onClick={() => viewCustomerHistory(c)}
@@ -668,16 +658,6 @@ const ManagerDashboard = () => {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-450 uppercase block">Phone Number</label>
-                <input 
-                  type="text" 
-                  value={customerForm.phone} 
-                  onChange={(e) => setCustomerForm({...customerForm, phone: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-850 text-slate-200 px-4 py-2.5 rounded-lg outline-none focus:border-amber-500 transition-all text-sm"
-                />
-              </div>
-
               <button
                 type="submit"
                 className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg text-sm shadow-md transition-all mt-4"
@@ -793,9 +773,6 @@ const ManagerDashboard = () => {
                   <span className="px-2.5 py-1 bg-slate-900 border border-slate-850 rounded-full text-xs font-semibold text-slate-300">
                     {viewingCustomer.role ? viewingCustomer.role.toUpperCase() : 'CUSTOMER'}
                   </span>
-                </div>
-                <div className="pt-2 border-t border-slate-900 text-xs text-slate-400 font-mono">
-                  Phone: {viewingCustomer.phone || 'Not provided'}
                 </div>
               </div>
 
