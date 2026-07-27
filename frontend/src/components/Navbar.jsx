@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logoutSuccess } from '../store/authSlice.js';
-import { Menu, X, Hotel, LogOut,} from 'lucide-react';
+import { logoutSuccess, setClickedBookNow } from '../store/authSlice.js';
+import { Menu, X, Hotel, LogOut } from 'lucide-react';
 import api from '../utils/api.js';
 
 const Navbar = () => {
@@ -40,6 +40,11 @@ const Navbar = () => {
   };
 
   const dashboardLink = getDashboardLink();
+
+  const handleSignInClick = () => {
+    dispatch(setClickedBookNow(false));
+    setIsOpen(false);
+  };
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/70 text-slate-100 shadow-xl shadow-slate-950/20">
@@ -82,11 +87,11 @@ const Navbar = () => {
               <div className="flex items-center gap-6">
                 <Link
                   to="/login"
+                  onClick={handleSignInClick}
                   className="text-base font-medium hover:text-amber-400 transition-colors"
                 >
                   Sign In
                 </Link>
-                
               </div>
             )}
           </div>
@@ -152,7 +157,7 @@ const Navbar = () => {
           <div className="pt-2 border-t border-slate-800">
             <Link
               to="/login"
-              onClick={() => setIsOpen(false)}
+              onClick={handleSignInClick}
               className="block text-center py-2 rounded-none text-base font-medium border border-slate-700 hover:bg-slate-800 transition-colors w-full mb-2"
             >
               Sign In

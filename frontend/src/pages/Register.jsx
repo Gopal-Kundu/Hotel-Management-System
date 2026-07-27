@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { authStart, authSuccess, authFailure } from '../store/authSlice.js';
-import { User, Mail, KeyRound, ArrowRight, Loader2, ShieldCheck, X, RefreshCw } from 'lucide-react';
+import { User, Mail, KeyRound, ArrowRight, Loader2, ShieldCheck, X, RefreshCw, Shield } from 'lucide-react';
 import api from '../utils/api.js';
 import { toast } from 'sonner';
 import validator from 'validator';
@@ -11,12 +11,13 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('customer');
 
   const [otp, setOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
-  const { loading } = useSelector((state) => state.auth);
+  const { loading, isClickedBookedNow } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -68,11 +69,21 @@ const Register = () => {
 
     dispatch(authStart());
     try {
-      const response = await api.post('/auth/register', { name, email, password, otp });
+      const selectedRole = isClickedBookedNow ? 'customer' : role;
+      const response = await api.post('/auth/register', { name, email, password, otp, role: selectedRole });
       const userData = response.data;
       dispatch(authSuccess({ user: userData }));
       toast.success(`Account created & verified! Welcome, ${userData.name}!`);
-      navigate('/customer-dashboard');
+
+      if (userData.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (userData.role === 'manager') {
+        navigate('/manager-dashboard');
+      } else if (userData.role === 'employee') {
+        navigate('/employee-dashboard');
+      } else {
+        navigate('/customer-dashboard');
+      }
     } catch (error) {
       console.error('Registration verification error:', error);
       const msg = error.response?.data?.message || 'OTP verification failed';
@@ -91,11 +102,38 @@ const Register = () => {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-slate-100 tracking-tight">Create Account</h2>
           <p className="text-slate-400 mt-2 text-sm">
-            Sign up to book rooms, request service, and more
+            Sign up to access your portal and hotel services
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isClickedBookedNow && (
+            <div className="space-y-1.5 mb-2">
+              <label className="text-sm font-semibold text-slate-300 block">Account Role</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: 'customer', label: 'Customer' },
+                  { id: 'employee', label: 'Employee' },
+                  { id: 'manager', label: 'Manager' },
+                  { id: 'admin', label: 'Admin' },
+                ].map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setRole(r.id)}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold border transition-all ${
+                      role === r.id
+                        ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md shadow-amber-500/20'
+                        : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1">
             <label className="text-sm font-semibold text-slate-300 block">Full Name</label>
             <div className="relative">

@@ -12,7 +12,7 @@ const generateToken = (userId, role) => {
 };
 
 export const register = async (req, res) => {
-  const { name, email, password, otp } = req.body;
+  const { name, email, password, otp, role } = req.body;
   try {
     if (!name || !email || !password || !otp) {
       return res.status(400).json({ message: 'All fields including OTP are required' });
@@ -46,11 +46,13 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const userRole = ['customer', 'manager', 'employee', 'admin'].includes(role) ? role : 'customer';
+
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: 'customer',
+      role: userRole,
     });
 
     const token = generateToken(user._id, user.role);

@@ -5,10 +5,12 @@ import { ChevronRight, Star, RefreshCw } from 'lucide-react';
 import api from '../utils/api.js';
 import { toast } from 'sonner';
 import { roomStart, roomSuccess, roomFailure } from '../store/roomSlice.js';
+import { setClickedBookNow } from '../store/authSlice.js';
 
 const Home = () => {
   const dispatch = useDispatch();
   const { rooms, loading } = useSelector((state) => state.room);
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +26,19 @@ const Home = () => {
       console.error('Error fetching rooms:', err);
       dispatch(roomFailure(err.message || 'Could not load rooms'));
       toast.error('Could not load featured rooms');
+    }
+  };
+
+  const handleBookNowClick = (roomId = null) => {
+    if (!user) {
+      dispatch(setClickedBookNow(true));
+      navigate('/register');
+    } else {
+      if (roomId) {
+        navigate(`/rooms?roomDetailsId=${roomId}`);
+      } else {
+        navigate('/rooms');
+      }
     }
   };
 
@@ -76,12 +91,12 @@ const Home = () => {
           
         
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4 max-w-sm mx-auto sm:max-w-none">
-            <Link 
-              to="/rooms"
+            <button 
+              onClick={() => handleBookNowClick()}
               className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-slate-950 px-8 py-3.5 font-bold transition-all flex items-center justify-center uppercase tracking-wider text-xs shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98]"
             >
               <span>Book Now</span>
-            </Link>
+            </button>
             <Link 
               to="/rooms"
               className="w-full sm:w-auto bg-transparent border border-slate-700 hover:border-amber-500 hover:text-amber-500 text-slate-200 px-8 py-3.5 font-bold transition-all flex items-center justify-center uppercase tracking-wider text-xs hover:scale-[1.02] active:scale-[0.98]"
@@ -145,7 +160,7 @@ const Home = () => {
 
               
                   <button
-                    onClick={() => navigate(`/rooms?roomDetailsId=${room._id}`)}
+                    onClick={() => handleBookNowClick(room._id)}
                     className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition-all active:scale-[0.98] mt-auto"
                   >
                     View & Book Room

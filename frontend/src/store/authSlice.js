@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   user: null,
   loading: false,
+  isClickedBookedNow: false,
 };
 
 const authSlice = createSlice({
@@ -25,6 +26,10 @@ const authSlice = createSlice({
     logoutSuccess: (state) => {
       state.user = null;
       state.loading = false;
+      state.isClickedBookedNow = false;
+    },
+    setClickedBookNow: (state, action) => {
+      state.isClickedBookedNow = action.payload;
     },
   },
 });
@@ -35,6 +40,7 @@ export const {
   authFailure,
   updateProfileSuccess,
   logoutSuccess,
+  setClickedBookNow,
 } = authSlice.actions;
 
 export default authSlice.reducer;

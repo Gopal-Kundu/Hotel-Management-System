@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { authStart, authSuccess, authFailure } from '../store/authSlice.js';
+import { authStart, authSuccess, authFailure, setClickedBookNow } from '../store/authSlice.js';
 import { KeyRound, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import api from '../utils/api.js';
 import { toast } from 'sonner';
@@ -129,8 +129,12 @@ const Login = () => {
 
         <div className="mt-8 text-center border-t border-slate-800/80 pt-6">
           <p className="text-slate-400 text-sm">
-            Don't have a customer account?{' '}
-            <Link to="/register" className="text-amber-500 hover:underline font-semibold transition-colors">
+            Don't have an account?{' '}
+            <Link 
+              to="/register" 
+              onClick={() => dispatch(setClickedBookNow(false))}
+              className="text-amber-500 hover:underline font-semibold transition-colors"
+            >
               Sign up here
             </Link>
           </p>

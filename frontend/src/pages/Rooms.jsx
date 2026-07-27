@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import { roomStart, roomSuccess, roomFailure } from '../store/roomSlice.js';
+import { setClickedBookNow } from '../store/authSlice.js';
 
 const Rooms = () => {
   const dispatch = useDispatch();
@@ -104,6 +105,10 @@ const Rooms = () => {
   };
 
   const handleOpenBooking = (room) => {
+    if (!user) {
+      dispatch(setClickedBookNow(true));
+      return navigate('/register');
+    }
     setSelectedRoom(room);
     setIsBookModalOpen(true);
   };
@@ -111,8 +116,9 @@ const Rooms = () => {
   const handleConfirmBooking = async (e) => {
     e.preventDefault();
     if (!user) {
-      toast.info('Please sign in to complete your booking');
-      return navigate('/login');
+      dispatch(setClickedBookNow(true));
+      toast.info('Please sign up to complete your booking');
+      return navigate('/register');
     }
 
     if (user.role !== 'customer') {
