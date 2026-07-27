@@ -13,7 +13,7 @@ const AdminDashboard = () => {
   const [managers, setManagers] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-  const [userForm, setUserForm] = useState({ id: '', name: '', email: '', password: '', phone: '', role: 'manager', status: 'active' });
+  const [userForm, setUserForm] = useState({ id: '', name: '', email: '', password: '', role: 'manager', status: 'active' });
   const [isEditingUser, setIsEditingUser] = useState(false);
 
   // Rooms States
@@ -91,7 +91,6 @@ const AdminDashboard = () => {
         await api.put(`/admin/users/${userForm.id}`, {
           name: userForm.name,
           email: userForm.email,
-          phone: userForm.phone,
           status: userForm.status,
         });
         toast.success('User updated successfully');
@@ -119,7 +118,7 @@ const AdminDashboard = () => {
 
   const openAddUserModal = (role) => {
     setIsEditingUser(false);
-    setUserForm({ id: '', name: '', email: '', password: '', phone: '', role, status: 'active' });
+    setUserForm({ id: '', name: '', email: '', password: '', role, status: 'active' });
     setIsUserModalOpen(true);
   };
 
@@ -130,7 +129,6 @@ const AdminDashboard = () => {
       name: u.name,
       email: u.email,
       password: '', // blank password on edit
-      phone: u.phone || '',
       role: u.role,
       status: u.employeeDetails?.status || 'active',
     });
@@ -431,7 +429,6 @@ const AdminDashboard = () => {
                       <tr>
                         <th className="px-6 py-4">Name</th>
                         <th className="px-6 py-4">Email</th>
-                        <th className="px-6 py-4">Phone</th>
                         <th className="px-6 py-4">Status</th>
                         <th className="px-6 py-4 text-right">Actions</th>
                       </tr>
@@ -441,7 +438,6 @@ const AdminDashboard = () => {
                         <tr key={u._id} className="hover:bg-slate-850/30 transition-colors">
                           <td className="px-6 py-4 font-semibold text-slate-200">{u.name}</td>
                           <td className="px-6 py-4">{u.email}</td>
-                          <td className="px-6 py-4">{u.phone || 'N/A'}</td>
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                               u.employeeDetails?.status === 'active' 
@@ -496,7 +492,6 @@ const AdminDashboard = () => {
                       </div>
                       <div className="text-xs space-y-1 text-slate-400">
                         <div><span className="text-slate-500">Email:</span> <span className="text-slate-300">{u.email}</span></div>
-                        <div><span className="text-slate-500">Phone:</span> <span className="text-slate-300">{u.phone || 'N/A'}</span></div>
                       </div>
                       <div className="flex justify-end gap-2 pt-2 border-t border-slate-850">
                         <button
@@ -682,16 +677,6 @@ const AdminDashboard = () => {
                   />
                 </div>
               )}
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-450 uppercase block">Phone</label>
-                <input 
-                  type="text" 
-                  value={userForm.phone} 
-                  onChange={(e) => setUserForm({...userForm, phone: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-850 text-slate-200 px-4 py-2.5 rounded-lg outline-none focus:border-amber-500 transition-all text-sm"
-                />
-              </div>
 
               {isEditingUser && (
                 <div className="space-y-1">

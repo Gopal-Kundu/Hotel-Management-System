@@ -120,10 +120,6 @@ const EmployeeDashboard = () => {
                 <span className="font-semibold text-slate-200">{user?.email}</span>
               </div>
               <div className="flex justify-between">
-                <span>Phone:</span>
-                <span className="font-semibold text-slate-200">{user?.phone || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between">
                 <span>Status:</span>
                 <span className="font-semibold capitalize text-emerald-400">
                   {user?.employeeDetails?.status}

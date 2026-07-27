@@ -12,9 +12,9 @@ const generateToken = (userId, role) => {
 };
 
 export const register = async (req, res) => {
-  const { name, email, password, phone, otp } = req.body;
+  const { name, email, password, otp } = req.body;
   try {
-    if (!name || !email || !password || !phone || !otp) {
+    if (!name || !email || !password || !otp) {
       return res.status(400).json({ message: 'All fields including OTP are required' });
     }
 
@@ -50,7 +50,6 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      phone,
       role: 'customer',
     });
 
@@ -68,7 +67,6 @@ export const register = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      phone: user.phone,
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -116,7 +114,6 @@ export const login = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      phone: user.phone,
       employeeDetails: user.employeeDetails,
     });
   } catch (error) {
@@ -247,7 +244,6 @@ export const verifyOtp = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      phone: user.phone,
       employeeDetails: user.employeeDetails,
     });
   } catch (error) {

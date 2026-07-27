@@ -27,7 +27,7 @@ export const createTask = async (req, res) => {
 export const getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find()
-      .populate('assignedTo', 'name email phone employeeDetails')
+      .populate('assignedTo', 'name email employeeDetails')
       .populate('assignedBy', 'name email')
       .populate('room', 'roomNumber type')
       .sort({ createdAt: -1 });

@@ -44,7 +44,7 @@ export const createBooking = async (req, res) => {
 export const getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find()
-      .populate('customer', 'name email phone')
+      .populate('customer', 'name email')
       .populate('room', 'roomNumber type price status')
       .sort({ createdAt: -1 });
     res.status(200).json(bookings);
@@ -102,7 +102,7 @@ export const updateBookingStatus = async (req, res) => {
     
     // Fetch updated booking with details
     const updatedBooking = await Booking.findById(id)
-      .populate('customer', 'name email phone')
+      .populate('customer', 'name email')
       .populate('room');
 
     res.status(200).json(updatedBooking);

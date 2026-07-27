@@ -54,7 +54,7 @@ export const getUsersByRole = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
-  const { name, email, password, role, phone } = req.body;
+  const { name, email, password, role } = req.body;
   try {
 
     const userExists = await User.findOne({ email });
@@ -69,7 +69,6 @@ export const createUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      phone,
       employeeDetails: {
         status: 'active',
         attendance: [],
@@ -81,7 +80,6 @@ export const createUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      phone: user.phone,
       employeeDetails: user.employeeDetails,
     });
   } catch (error) {
@@ -92,7 +90,7 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, status } = req.body;
+  const { name, email, status } = req.body;
   try {
     const user = await User.findById(id);
     if (!user) {
@@ -105,7 +103,6 @@ export const updateUser = async (req, res) => {
 
     if (name) user.name = name;
     if (email) user.email = email;
-    if (phone) user.phone = phone;
 
     if (user.role !== 'customer') {
       if (status) user.employeeDetails.status = status;
